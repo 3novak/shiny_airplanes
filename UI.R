@@ -5,7 +5,7 @@ shinyUI(fluidPage(
   sidebarLayout(
     sidebarPanel(
       sliderInput('alt_cut',
-                  'Minimum altitude:',
+                  'Altitude range:',
                   min = 0,
                   max = 40000,
                   value = c(0, 40000),
