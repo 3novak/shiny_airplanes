@@ -1,15 +1,17 @@
 library(shiny)
 library(data.table)
 library(maps)
-
-
+library(ggplot2)
+library(ggmap)
+library(rgdal)
+library(scales)
+library(rgeos)
 
 # map('state')
 shinyServer(function(input, output){
   output$mapPlot <- renderPlot({
-    
-    map('state', regions=c('minnesota', 'wisconsin', 'michigan', 
-                           'iowa', 'illinois', 'indiana'))
+
+    # modifications to the data from the inputs through UI.R
     data <- data[(altitude > input$alt_cut[1]) & (altitude < input$alt_cut[2]),]
     data <- data[qsec > input$time_cut_min,]
     data <- data[qsec_local > input$time_min_local,]
@@ -18,13 +20,17 @@ shinyServer(function(input, output){
     } else {
       data[, colors := input$choose_color] 
     }
-    points(data[, long], data[, lat], cex = .2, col = data[, colors])
     
+    # define the plot
+    # use geom_path() for shapes with no fill
+    ggplot() + geom_polygon(data = stateLines, aes(x = long, y = lat),
+                            color = 'black',
+                            size = 0.25, 
+                            group = stateLines[, group],
+                            fill = 'white') +
+               coord_map() +
+               geom_point(data = data, colour = data[, colors],
+                          aes(x = data[, long], y = data[, lat]))
   })
 })
-
-
-
-#Arrowhead(data[, long], data[, lat], arr.length = .1)
-
 
