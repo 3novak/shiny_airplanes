@@ -1,13 +1,11 @@
 library(shiny)
 library(data.table)
-library(maps)
 library(ggplot2)
 library(ggmap)
 library(rgdal)
 library(scales)
 library(rgeos)
 
-# map('state')
 shinyServer(function(input, output){
   output$mapPlot <- renderPlot({
 
