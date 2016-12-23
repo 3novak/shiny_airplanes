@@ -1,4 +1,3 @@
-library(shiny)
 
 shinyUI(fluidPage(
   titlePanel('Aircraft Flights'),
@@ -14,13 +13,13 @@ shinyUI(fluidPage(
       sliderInput('time_cut_min',
                   'Minimum overall time decile:',
                   min = 1,
-                  max = air_data[, max(qsec)],
+                  max = max(air_data$qsec),
                   value = 1,
                   step = 1),
       sliderInput('time_min_local',
                   'Minimum local time decile:',
                   min = 1,
-                  max = air_data[, max(qsec_local)],
+                  max = max(air_data$qsec_local),
                   value = 1,
                   step = 1),
       tags$hr(),
@@ -30,10 +29,7 @@ shinyUI(fluidPage(
                   selected = 'grad')
     ),
     mainPanel(
-      plotOutput('mapPlot',
-                 dblclick = 'zoom_dblclick',
-                 brush = brushOpts(id = 'zoom_brush',
-                                   resetOnNew = TRUE)),
+      leafletOutput('mapPlot'),
       p(class = 'text-muted', 'doubleclick the map to reset the zoom')
     )
   )
