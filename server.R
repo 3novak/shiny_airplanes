@@ -16,15 +16,18 @@ shinyServer(function(input, output){
                            altitude < input$alt_cut[2] &
                            qsec >= input$time_cut_min & 
                            qsec_local >= input$time_min_local, ]
-      
-      if (input$choose_color == 'red'){
-        new_data[, colors := 'red']
-      } else if (input$choose_color == 'navy'){
-        new_data[, colors := 'navy']
-      } else if (input$choose_color == 'grad'){
-        new_data[, colors := grad]
-      }
       return(new_data)
+  })
+  
+  colorPal <- reactive({
+    if (input$choose_color == 'red'){
+      pal2 <- colorNumeric('red', air_data[, mph])
+    } else if (input$choose_color == 'navy'){
+      pal2 <- colorNumeric('navy', air_data[, mph])
+    } else if (input$choose_color == 'grad'){
+      pal2 <- colorNumeric(colorRamp(c('blue', 'dark green')), air_data[, mph])
+    }
+    return(pal2)
   })
   
   output$mapPlot <- renderLeaflet({
@@ -38,6 +41,7 @@ shinyServer(function(input, output){
   })
   
   observe({
+    pal <- colorPal()
     leafletProxy('mapPlot') %>%
       clearGroup('A') %>%
       addCircles(data = subsetData(),
@@ -46,6 +50,14 @@ shinyServer(function(input, output){
                  lat = ~lat,
                  radius = 2,
                  weight = 2,
-                 color = ~colors)
+                 color = ~pal(mph))
+    })
+  
+  observe({
+    proxy <- leafletProxy('mapPlot', data = air_data)
+    
+    proxy %>% clearControls()
+    pal <- colorPal()
+    proxy %>% addLegend(position = 'bottomright', pal = pal, values = ~mph)
   })
 })
