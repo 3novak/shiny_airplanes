@@ -26,7 +26,8 @@ shinyUI(fluidPage(
       selectInput('choose_color',
                   'Select path color:',
                   choices = list('red' = 'red', 'navy' = 'navy', 'gradient' = 'grad'),
-                  selected = 'grad')
+                  selected = 'grad'),
+      checkboxInput('legend', label = 'Display Legend', value = TRUE)
     ),
     mainPanel(
       leafletOutput('mapPlot'),
