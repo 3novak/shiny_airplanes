@@ -27,7 +27,20 @@ shinyUI(fluidPage(
                   'Select path color:',
                   choices = list('red' = 'red', 'navy' = 'navy', 'gradient' = 'grad'),
                   selected = 'grad'),
-      checkboxInput('legend', label = 'Display Legend', value = TRUE)
+      checkboxInput('legend', label = 'Display Legend', value = TRUE),
+      tags$hr(),
+      selectInput('origin',
+                  'Filter on origin airport',
+                  choices = air_data[, unique(origin)],
+                  selected = air_data[, unique(origin)],
+                  multiple = TRUE,
+                  selectize = FALSE),
+      selectInput('dest',
+                  'Filter on destination airport',
+                  choices = air_data[, unique(destination)],
+                  selected = air_data[, unique(destination)],
+                  multiple = TRUE,
+                  selectize = FALSE)
     ),
     mainPanel(
       leafletOutput('mapPlot'),
