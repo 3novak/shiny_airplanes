@@ -1,9 +1,6 @@
 library(shiny)
 library(data.table)
-library(ggplot2)
-library(ggmap)
 library(rgdal)
-library(scales)
 library(rgeos)
 library(leaflet)
 
@@ -12,10 +9,12 @@ shinyServer(function(input, output){
   stateData <- stateLines500k
   
   subsetData <- reactive({
-      new_data <- air_data[altitude > input$alt_cut[1] &
-                           altitude < input$alt_cut[2] &
+      new_data <- air_data[altitude >= input$alt_cut[1] &
+                           altitude <= input$alt_cut[2] &
                            qsec >= input$time_cut_min & 
-                           qsec_local >= input$time_min_local, ]
+                           qsec_local >= input$time_min_local &
+                           origin %in% input$origin &
+                           destination %in% input$dest, ]
       return(new_data)
   })
   
@@ -25,7 +24,7 @@ shinyServer(function(input, output){
     } else if (input$choose_color == 'navy'){
       pal2 <- colorNumeric('navy', air_data[, mph])
     } else if (input$choose_color == 'grad'){
-      pal2 <- colorNumeric(colorRamp(c('blue', 'dark green')), air_data[, mph])
+      pal2 <- colorNumeric(colorRamp(c('blue', 'red')), air_data[, mph])
     }
     return(pal2)
   })
@@ -41,23 +40,29 @@ shinyServer(function(input, output){
   })
   
   observe({
-    pal <- colorPal()
-    leafletProxy('mapPlot') %>%
-      clearGroup('A') %>%
-      addCircles(data = subsetData(),
-                 group = 'A',
-                 lng = ~long,
-                 lat = ~lat,
-                 radius = 2,
-                 weight = 2,
-                 color = ~pal(mph))
+    if (nrow(subsetData()) == 0){
+      leafletProxy('mapPlot') %>%
+        clearGroup('mk')
+    } else{
+      pal <- colorPal()
+      leafletProxy('mapPlot') %>%
+        clearGroup('mk') %>%
+        addCircles(data = subsetData(),
+                   group = 'mk',
+                   lng = ~long,
+                   lat = ~lat,
+                   radius = 2,
+                   weight = 2,
+                   color = ~pal(mph))
+      }
     })
   
   observe({
-    proxy <- leafletProxy('mapPlot', data = air_data)
-    
+    proxy <- leafletProxy('mapPlot', data = subsetData())
     proxy %>% clearControls()
-    pal <- colorPal()
-    proxy %>% addLegend(position = 'bottomright', pal = pal, values = ~mph)
+    if (input$legend){
+      pal <- colorPal()
+      proxy %>% addLegend(position = 'bottomright', pal = pal, values = ~mph) 
+    }
   })
 })
