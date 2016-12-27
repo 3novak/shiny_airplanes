@@ -1,5 +1,12 @@
-# data for plotting is loaded here to be visible to UI.R and server.R
+library(shiny)
+library(data.table)
+library(rgdal)
+library(rgeos)
+library(leaflet)
+library(ggplot2)
+library(scales)
 
+# data for plotting is loaded here to be visible to UI.R and server.R
 
 # TODO: select data: county level, etc.
 # TODO: path indicators: add triangles, pictures, sizes, etc.
@@ -15,15 +22,12 @@
 #                      layer = 'cb_2015_us_state_5m')
 #stateLines5m <- stateLines[-c(3,23,33,34,41,42,43),]  # remove OCONUS locations
 #stateLines5m <- as.data.table(fortify(stateLines, region = 'GEOID'))
-
-stateLines500k <- readOGR(dsn = '/Users/ewnovak/Documents/projects/shiny_airplanes/cb_2015_us_state_5m',
+stateLines500k <- readOGR(dsn = 'cb_2015_us_state_5m',
                           layer = 'cb_2015_us_state_5m')
 stateLines500k <- stateLines500k[-c(3,23,33,34,41,42,43),]  # remove OCONUS locations
-#stateLines500k <- as.data.table(fortify(stateLines500k, region = 'GEOID'))
 
 # loading and preprocessing data for the flights
-setwd('~/Documents/projects/shiny_airplanes')
-air_data <- as.data.table(read.csv('~/Documents/projects/shiny_airplanes/data.txt', sep = '|'))
+air_data <- as.data.table(read.csv('data.txt', sep = '|'))
 air_data <- air_data[!is.null(mph),]
 air_data <- air_data[lat != 0 & long != 0,]
 air_data[, datetime := as.POSIXct(paste(date, time))]
@@ -38,7 +42,6 @@ num_bins <- 10
 speed_cuts <- levels(cut(air_data[, mph], breaks = num_bins))
 qpal <- colorQuantile(colorPal, air_data[, mph], n=5)
 
-pal <- colorNumeric(palette = 'YlGnBu', domain = air_data[, mph])
 
 # sort on time in order to assign time quantiles
 setkey(air_data, datetime)
@@ -48,6 +51,7 @@ air_data[, qsec := as.numeric(cut(seconds, quantile(seconds, 0:10/10),
 air_data[, qsec_local := as.numeric(cut(seconds, quantile(seconds, 0:10/10), 
                                     labels = 1:10, include.lowest = TRUE)),
          by = .(aircraft, origin, destination)]
+air_data[, qsec_factor := as.factor(qsec_local)]
+
 air_data[, flight_id := factor(rleidv(air_data, cols = c('aircraft', 'origin', 'destination')))]
 air_data[, bin_mph := as.numeric(cut(mph, breaks = c(-1, 100, 200, 300, 400, 10000)))]
-air_data[, qsec_factor := as.factor(qsec_local)]
