@@ -56,6 +56,19 @@ shinyServer(function(input, output){
     return(pal2)
   })
   
+  # reactive ui components that update options based on subset data
+  # not implemented yet--need to think about overall structure first
+  # because it could turn into a rat's nest to deal with circularity
+  output$flight_selector <- renderUI({
+      selectInput('flight',
+                  'Choose a flight:',
+                  choices = as.list(unique(air_data$flight_id)),
+                  selected = as.list(unique(air_data$flight_id)),
+                  multiple = TRUE,
+                  selectize = FALSE)
+  })
+
+  
   # plot the main graphic with boundary lines. no other markers included.
   # further objects are plotted reactively.
   # if we were cool, we would plot markers for airports at this stage, and
@@ -110,7 +123,7 @@ shinyServer(function(input, output){
            x = 'Flight time decile', 
            y = 'Altitude (ft.)', 
            color = 'Flight', 
-           size = 'Speed quintile') + 
+           size = 'Speed') + 
       scale_color_manual(values = c('red', 'blue')) + 
       # TODO: add labels to the legend so it looks better
       # c('[0, 100)', '[100, 200)', '[200, 300)', '[300, 400)', '[400, inf)') +
