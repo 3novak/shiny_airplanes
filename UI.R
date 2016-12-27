@@ -1,3 +1,10 @@
+library(shiny)
+library(data.table)
+library(rgdal)
+library(rgeos)
+library(leaflet)
+library(ggplot2)
+library(scales)
 
 shinyUI(fluidPage(
   titlePanel('Aircraft Flights'),
@@ -24,12 +31,7 @@ shinyUI(fluidPage(
                       multiple = TRUE,
                       selectize = FALSE),
           tags$hr(),
-          selectInput('flight',
-                      'Choose a flight:',
-                      choices = air_data[, unique(flight_id)],
-                      selected = air_data[, unique(flight_id)],
-                      multiple = TRUE,
-                      selectize = FALSE)
+          uiOutput('flight_selector')
         ),
         tabPanel('Time',
           sliderInput('time_range',
