@@ -124,7 +124,7 @@ shinyServer(function(input, output){
            y = 'Altitude (ft.)', 
            color = 'Flight', 
            size = 'Speed') + 
-      scale_color_manual(values = c('red', 'blue')) + 
+      #scale_color_manual(values = c('red', 'blue')) + 
       # TODO: add labels to the legend so it looks better
       # c('[0, 100)', '[100, 200)', '[200, 300)', '[300, 400)', '[400, inf)') +
       scale_y_continuous(labels = comma) + 
