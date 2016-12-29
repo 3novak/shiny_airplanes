@@ -16,6 +16,11 @@ library(scales)
 # TODO: add airport markers
 # TODO: perform stats by dest/origin airport
 
+# http://flightaware.com/live/flight/UAL1451/history/20161222/0315Z/KLAX/KORD/tracklog
+# http://flightaware.com/live/flight/TCF2727/history/20161222/2359Z/KLGA/KDCA
+
+
+
 
 # shapefile downloaded from http://www.census.gov/geo/maps-data/data/cbf/cbf_state.html
 #stateLines5m <- readOGR(dsn = '/Users/ewnovak/Documents/projects/shiny_airplanes/cb_2015_us_state_5m',
@@ -27,7 +32,7 @@ stateLines500k <- readOGR(dsn = 'cb_2015_us_state_5m',
 stateLines500k <- stateLines500k[-c(3,23,33,34,41,42,43),]  # remove OCONUS locations
 
 # loading and preprocessing data for the flights
-air_data <- as.data.table(read.csv('data.txt', sep = '|'))
+air_data <- as.data.table(read.csv('data2.txt', sep = '|'))
 air_data <- air_data[!is.null(mph),]
 air_data <- air_data[lat != 0 & long != 0,]
 air_data[, datetime := as.POSIXct(paste(date, time))]
@@ -53,5 +58,6 @@ air_data[, qsec_local := as.numeric(cut(seconds, quantile(seconds, 0:10/10),
          by = .(aircraft, origin, destination)]
 air_data[, qsec_factor := as.factor(qsec_local)]
 
+setkey(air_data, aircraft, origin, destination)
 air_data[, flight_id := factor(rleidv(air_data, cols = c('aircraft', 'origin', 'destination')))]
 air_data[, bin_mph := as.numeric(cut(mph, breaks = c(-1, 100, 200, 300, 400, 10000)))]
